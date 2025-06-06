@@ -1,5 +1,6 @@
 import { Model, DataTypes } from "@sequelize/core";
 import {
+  Table,
   Attribute,
   PrimaryKey,
   AutoIncrement,
@@ -12,6 +13,7 @@ import {
 } from "@sequelize/core/decorators-legacy";
 import bcrypt from "bcrypt";
 
+@Table({ freezeTableName: true, underscored: false, modelName: "user" })
 export class User extends Model {
   @Attribute(DataTypes.INTEGER)
   @PrimaryKey

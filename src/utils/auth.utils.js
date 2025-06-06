@@ -24,7 +24,7 @@ const generateToken = (user, type) => {
     Math.floor(Date.now() / 1000) +
     +process.env[`TOKEN_${type.toUpperCase()}_EXPIRATION_SECS`];
   return jwt.sign(
-    { exp: expTime, data: { id: user.id } },
+    { exp: expTime, data: { id: user.id, role: user.role } },
     process.env[`TOKEN_${type.toUpperCase()}_KEY`]
   );
 };
@@ -41,7 +41,7 @@ const Authenticate = async (req, res) => {
 
   try {
     const user = await User.findOne({
-      attributes: ["id", "password", "email", "username"],
+      attributes: ["id", "password", "email", "username", "role"],
       where: { email: username },
     });
 
