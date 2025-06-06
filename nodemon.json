@@ -1,0 +1,6 @@
+{
+  "watch": ["src"],
+  "ext": "js,json",
+  "ignore": ["dist"],
+  "exec": "npx babel-node src/index.js"
+}
