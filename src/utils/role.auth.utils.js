@@ -5,7 +5,7 @@
  * @param {Array|string} roles - A single role or array of roles allowed to access the route.
  * @returns {Function} Express middleware function.
  */
-export const requireRole = (roles = []) => {
+export const requiresRole = (roles = []) => {
   return async (req, res, next) => {
     const userRole = req.user?.role;
     const userId = req.user?.id;

@@ -61,7 +61,13 @@ const Authenticate = async (req, res) => {
     // Send tokens and user data to the client
     res.json({
       access_token,
-      user: { id: user.id, email: user.email, username: user.username },
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+        avatar: user.avatar,
+      },
     });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });

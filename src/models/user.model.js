@@ -58,12 +58,22 @@ export class User extends Model {
   @BeforeCreate static async hashUserPassword(User, options) {
     User.password = await createHash(User.password);
   }
+  @BeforeCreate static async ensureSingleAdmin(user, options) {
+    if (user.role === "admin") {
+      const existingAdmin = await User.findOne({ where: { role: "admin" } });
+      if (existingAdmin) throw new Error("An admin user already exists.");
+    }
+  }
   @BeforeUpdate static async hashUserPassword(User, options) {
     User.password = await createHash(User.password);
   }
   @BeforeBulkCreate static async hashUserPassword(users) {
-    for (const user of users) {
-      user.password = await bcrypt.hash(user.password, 10);
+    if (Array.isArray(users)) {
+      for (const user of users) {
+        user.password = await bcrypt.hash(user.password, 10);
+      }
+    } else if (users && typeof users === "object" && users.password) {
+      users.password = await bcrypt.hash(users.password, 10);
     }
   }
 }

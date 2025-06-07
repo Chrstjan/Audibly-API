@@ -27,8 +27,8 @@ export const sequelize = new Sequelize({
   user: process.env.DBUSER,
   password: process.env.DBPASSWORD,
   models: [
-    User,
     Genre,
+    User,
     Album,
     Audiofile,
     Image,
