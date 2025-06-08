@@ -2,7 +2,6 @@ import express from "express";
 import { Authenticate, Authorize } from "../utils/auth.utils.js";
 import { requiresRole } from "../utils/role.auth.utils.js";
 import { errorResponse, successResponse } from "../utils/response.utils.js";
-import { User } from "../models/user.model.js";
 
 export const authController = express.Router();
 

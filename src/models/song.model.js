@@ -27,7 +27,6 @@ export class Song extends Model {
   user_id;
 
   @Attribute(DataTypes.INTEGER)
-  @NotNull
   album_id;
 
   @Attribute(DataTypes.INTEGER)
@@ -56,4 +55,8 @@ export class Song extends Model {
   @NotNull
   @Default(0)
   num_plays;
+
+  @Attribute(DataTypes.BOOLEAN)
+  @Default(false)
+  is_single;
 }

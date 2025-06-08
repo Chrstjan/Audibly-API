@@ -4,7 +4,10 @@ import cors from "cors";
 import { setRelations } from "./models/relations.js";
 import { dbController } from "./controllers/db.controller.js";
 import { authController } from "./controllers/auth.controller.js";
+import { genreController } from "./controllers/genre.controller.js";
 import { userController } from "./controllers/user.controller.js";
+import { audiofileController } from "./controllers/audiofile.controller.js";
+import { imageController } from "./controllers/image.controller.js";
 const app = express();
 const corsOptions = {
   origin: "*",
@@ -24,7 +27,14 @@ app.get("/", async (req, res) => {
 
 await setRelations();
 
-app.use(dbController, authController, userController);
+app.use(
+  dbController,
+  authController,
+  genreController,
+  userController,
+  audiofileController,
+  imageController
+);
 
 app.listen(port, () => {
   console.log(`Server live on http://localhost:${port}`);

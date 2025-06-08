@@ -63,6 +63,23 @@ export const setRelations = async () => {
     as: "songs",
   });
 
+  // Album / Song Relation
+  Song.belongsTo(Album, {
+    foreignKey: {
+      name: "album_id",
+      onDelete: "CASCADE",
+    },
+    as: "album",
+  });
+
+  Album.hasMany(Song, {
+    foreignKey: {
+      name: "album_id",
+      onDelete: "CASCADE",
+    },
+    as: "songs",
+  });
+
   //#region audiofile
   // Audiofile / Song Relation
   Song.belongsTo(Audiofile, {
@@ -189,5 +206,14 @@ export const setRelations = async () => {
       onDelete: "CASCADE",
     },
     as: "favorite_songs",
+  });
+
+  // Song / Favorite Songs Relations
+  FavoriteSong.belongsTo(Song, {
+    foreignKey: {
+      name: "song_id",
+      onDelete: "CASCADE",
+    },
+    as: "song",
   });
 };
