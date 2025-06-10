@@ -4,6 +4,7 @@ import cors from "cors";
 import { setRelations } from "./models/relations.js";
 import { dbController } from "./controllers/db.controller.js";
 import { authController } from "./controllers/auth.controller.js";
+import { adminController } from "./controllers/admin.controller.js";
 import { genreController } from "./controllers/genre.controller.js";
 import { userController } from "./controllers/user.controller.js";
 import { roleController } from "./controllers/role.controller.js";
@@ -12,8 +13,11 @@ import { audiofileController } from "./controllers/audiofile.controller.js";
 import { imageController } from "./controllers/image.controller.js";
 import { songController } from "./controllers/song.controller.js";
 import { songInfoController } from "./controllers/song_info.controller.js";
+import { songContributorController } from "./controllers/song_contributor.controller.js";
 import { playlistController } from "./controllers/playlist.controller.js";
 import { artistController } from "./controllers/artist.controller.js";
+import { favoriteArtistController } from "./controllers/favorite_artist.controller.js";
+import { favoriteSongController } from "./controllers/favorite_song.controller.js";
 
 const app = express();
 const corsOptions = {
@@ -37,6 +41,7 @@ await setRelations();
 app.use(
   dbController,
   authController,
+  adminController,
   genreController,
   userController,
   roleController,
@@ -45,8 +50,11 @@ app.use(
   imageController,
   songController,
   songInfoController,
+  songContributorController,
   playlistController,
-  artistController
+  artistController,
+  favoriteArtistController,
+  favoriteSongController
 );
 
 app.listen(port, () => {
