@@ -152,6 +152,14 @@ export const setRelations = async () => {
     },
     as: "contributors",
   });
+
+  SongContributor.belongsTo(User, {
+    foreignKey: {
+      name: "user_id",
+      onDelete: "CASCADE",
+    },
+    as: "artist",
+  });
   //#endregion info
 
   //#endregion Song Relations

@@ -6,8 +6,15 @@ import { dbController } from "./controllers/db.controller.js";
 import { authController } from "./controllers/auth.controller.js";
 import { genreController } from "./controllers/genre.controller.js";
 import { userController } from "./controllers/user.controller.js";
+import { roleController } from "./controllers/role.controller.js";
+import { albumController } from "./controllers/album.controller.js";
 import { audiofileController } from "./controllers/audiofile.controller.js";
 import { imageController } from "./controllers/image.controller.js";
+import { songController } from "./controllers/song.controller.js";
+import { songInfoController } from "./controllers/song_info.controller.js";
+import { playlistController } from "./controllers/playlist.controller.js";
+import { artistController } from "./controllers/artist.controller.js";
+
 const app = express();
 const corsOptions = {
   origin: "*",
@@ -32,8 +39,14 @@ app.use(
   authController,
   genreController,
   userController,
+  roleController,
+  albumController,
   audiofileController,
-  imageController
+  imageController,
+  songController,
+  songInfoController,
+  playlistController,
+  artistController
 );
 
 app.listen(port, () => {
