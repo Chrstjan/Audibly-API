@@ -9,13 +9,23 @@ import sequelize from "../config/sequelize.config.js";
  * @returns {Promise<Array>} - A promise that resolves with the parsed CSV data.
  */
 const getCsvData = async (fileName) => {
-  const csvPath = path.resolve(`./data/${fileName}`);
+  const csvPath = path.resolve(`./src/data/${fileName}`);
   const data = [];
 
   return new Promise((resolve, reject) => {
     fs.createReadStream(csvPath)
       .pipe(csv())
-      .on("data", (row) => data.push(row))
+      .on("data", (row) => {
+        if ("is_single" in row) {
+          row.is_single = row.is_single === "true";
+        }
+
+        if ("num_plays" in row) {
+          row.num_plays = parseInt(row.num_plays, 10);
+        }
+
+        data.push(row);
+      })
       .on("end", () => resolve(data))
       .on("error", (err) => reject(err));
   });
@@ -27,18 +37,17 @@ const getCsvData = async (fileName) => {
  * @param {Object} model - The Sequelize model to insert data into.
  */
 const seedFromCsv = async (fileName, model) => {
-  const transaction = await sequelize.transaction();
-
   try {
-    const data = await getCsvData(fileName);
-    await model.bulkCreate(data, { transaction });
-    await transaction.commit();
-    console.log(`Seeding completed for ${fileName}`);
-    return fileName;
+    const result = await sequelize.transaction(async (transaction) => {
+      const data = await getCsvData(fileName);
+      await model.bulkCreate(data, { transaction });
+      console.log(`Seeding complete for ${fileName}`);
+      return fileName;
+    });
+
+    return result;
   } catch (err) {
-    await transaction.rollback();
     console.error("Seeding error:", err);
-    return false;
   }
 };
 

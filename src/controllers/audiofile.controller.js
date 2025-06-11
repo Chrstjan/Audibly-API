@@ -9,7 +9,7 @@ import { errorResponse, successResponse } from "../utils/response.utils.js";
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "/app/audiofiles");
+    cb(null, "/app/songFiles/audio");
   },
   filename: (req, file, cb) => {
     const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -69,7 +69,7 @@ audiofileController.get(
 
 audiofileController.get(`/${url}/:filename`, async (req, res) => {
   try {
-    const filePath = path.join("/app/audiofiles", req.params.filename);
+    const filePath = path.join("/app/songFiles/audio", req.params.filename);
 
     if (!fs.existsSync(filePath)) {
       return errorResponse(res, `Audiofile not found`, null, 404);
@@ -133,7 +133,7 @@ audiofileController.delete(
         );
       }
 
-      const filePath = path.join("/app/audiofiles", audioFile.filename);
+      const filePath = path.join("/app/songFiles/audio", audioFile.filename);
 
       await model.destroy({ where: { id: id, user_id: userId } });
 

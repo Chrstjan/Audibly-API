@@ -1,8 +1,10 @@
 import express from "express";
 import sequelize from "../config/sequelize.config.js";
-import { errorResponse, successResponse } from "../utils/response.utils.js";
-import { copyFilesToVolume } from "../utils/seed.audiofile.utils.js";
+import { Authorize } from "../utils/auth.utils.js";
+import { requiresRole } from "../utils/role.auth.utils.js";
+import { copyFilesToVolume } from "../utils/seed.uploads.utils.js";
 import { seedFromCsv } from "../utils/seed.utils.js";
+import { errorResponse, successResponse } from "../utils/response.utils.js";
 import { Genre } from "../models/genre.model.js";
 import { Album } from "../models/album.model.js";
 import { Audiofile } from "../models/audiofile.model.js";
@@ -24,7 +26,7 @@ dbController.get("/api", async (req, res) => {
 
 dbController.get("/sync", async (req, res) => {
   try {
-    const resp = await sequelize.sync({ alter: true });
+    const resp = await sequelize.sync();
     successResponse(res, "DB synced", 200);
   } catch (err) {
     errorResponse(res, `Error in DB sync: ${err.message}`, err, 500);
@@ -43,8 +45,6 @@ dbController.get("/seed", async (req, res) => {
       { file: "audiofile.csv", model: Audiofile },
       { file: "image.csv", model: Image },
       { file: "song.csv", model: Song },
-      { file: "song_info.csv", model: SongInfo },
-      { file: "song_contributor.csv", model: SongContributor },
     ];
 
     const files_seeded = [];

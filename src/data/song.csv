@@ -1,0 +1,2 @@
+"id","user_id","album_id","genre_id","name","slug","image_id","audiofile_id","num_plays","is_single"
+1,1,1,6,"Song test","song-test",1,1,0,true

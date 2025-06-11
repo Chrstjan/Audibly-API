@@ -9,7 +9,7 @@ import { errorResponse, successResponse } from "../utils/response.utils.js";
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "/app/images");
+    cb(null, "/app/songFiles/image");
   },
   filename: (req, file, cb) => {
     const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -47,7 +47,7 @@ imageController.get(
         res,
         result.map((image) => ({
           ...image.toJSON(),
-          url: `/images/${image.filename}`,
+          url: `/songFiles/${image.filename}`,
           filename: image.filename,
           id: image.id,
           user_id: image.user_id,
@@ -64,7 +64,7 @@ imageController.get(
 
 imageController.get(`/${url}/:filename`, async (req, res) => {
   try {
-    const filePath = path.join("/app/images", req.params.filename);
+    const filePath = path.join("/app/songFiles/image", req.params.filename);
 
     if (!fs.existsSync(filePath)) {
       return errorResponse(res, `Image not found`, null, 404);
@@ -123,7 +123,7 @@ imageController.delete(
         );
       }
 
-      const filePath = path.join("/app/images", imageFile.filename);
+      const filePath = path.join("/app/songFiles/image", imageFile.filename);
 
       await model.destroy({ where: { id: id, user_id: userId } });
 
