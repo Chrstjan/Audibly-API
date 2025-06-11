@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "babel src --out-dir dist",
+    "postbuild": "copyfiles -u 1 src/dummyData/**/* src/data/**/* dist",
     "start": "node dist/index.js",
     "dev": "nodemon --watch src --exec \"npm run build && node dist/index.js\""
   },
@@ -39,6 +40,7 @@
     "@babel/plugin-proposal-decorators": "^7.27.1",
     "@babel/preset-env": "^7.27.2",
     "@babel/register": "^7.27.1",
+    "copyfiles": "^2.4.1",
     "nodemon": "^3.1.10"
   }
 }

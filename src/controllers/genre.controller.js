@@ -34,7 +34,7 @@ genreController.get(`/${url}`, async (req, res) => {
 
 genreController.get(`/${url}/:slug`, async (req, res) => {
   try {
-    const slug = req.params;
+    const { slug } = req.params;
 
     const result = await model.findOne({
       where: { slug: slug },

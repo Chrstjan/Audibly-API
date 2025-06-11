@@ -2,6 +2,9 @@ import fs from "fs";
 import csv from "csv-parser";
 import path from "path";
 import sequelize from "../config/sequelize.config.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 /**
  * Reads data from a CSV file and returns it as an array of objects.
@@ -9,7 +12,11 @@ import sequelize from "../config/sequelize.config.js";
  * @returns {Promise<Array>} - A promise that resolves with the parsed CSV data.
  */
 const getCsvData = async (fileName) => {
-  const csvPath = path.resolve(`./src/data/${fileName}`);
+  const isProd = process.env.NODE_ENV === "production";
+
+  const csvPath = path.resolve(
+    isProd ? `./dist/data/${fileName}` : `./src/data/${fileName}`
+  );
   const data = [];
 
   return new Promise((resolve, reject) => {

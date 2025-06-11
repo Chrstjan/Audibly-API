@@ -1,17 +1,24 @@
 import fs from "fs";
 import path from "path";
+import dotenv from "dotenv";
 
-const AUDIO_SOURCE = "./src/dummyData/audio/";
+dotenv.config();
+
+const isProd = process.env.NODE_ENV === "production";
+
+const AUDIO_SOURCE = isProd
+  ? path.join(process.cwd(), "dist", "dummyData", "audio")
+  : path.join(process.cwd(), "src", "dummyData", "audio");
 const AUDIO_TARGET = "/app/songFiles/audio";
 
-const IMAGE_SOURCE = "./src/dummyData/image/";
+const IMAGE_SOURCE = isProd
+  ? path.join(process.cwd(), "dist", "dummyData", "image")
+  : path.join(process.cwd(), "src", "dummyData", "image");
 const IMAGE_TARGET = "/app/songFiles/image";
 
 export const copyFilesToVolume = () => {
-  if (fs.existsSync(AUDIO_TARGET) && fs.existsSync(IMAGE_TARGET)) {
-    fs.mkdirSync(AUDIO_TARGET, { recursive: true });
-    fs.mkdirSync(IMAGE_TARGET, { recursive: true });
-  }
+  fs.mkdirSync(AUDIO_TARGET, { recursive: true });
+  fs.mkdirSync(IMAGE_TARGET, { recursive: true });
 
   const audiofiles = fs.readdirSync(AUDIO_SOURCE);
 
