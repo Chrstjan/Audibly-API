@@ -27,4 +27,8 @@ export class Image extends Model {
   @Attribute(DataTypes.INTEGER)
   @NotNull
   user_id;
+
+  @Attribute(DataTypes.TEXT)
+  @NotNull
+  artist_credit;
 }

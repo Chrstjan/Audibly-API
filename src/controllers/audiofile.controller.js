@@ -51,6 +51,7 @@ audiofileController.get(
           filename: audio.filename,
           id: audio.id,
           user_id: audio.user_id,
+          artist_credit: audio.artist_credit,
         })),
         "success",
         200
@@ -74,7 +75,7 @@ audiofileController.get(`/${url}/:filename`, async (req, res) => {
       return errorResponse(res, `Audiofile not found`, null, 404);
     }
 
-    res.send(filePath);
+    res.sendFile(filePath);
   } catch (err) {
     errorResponse(res, `Error in getting audiofile: ${err.message}`, err, 500);
   }

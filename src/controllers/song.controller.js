@@ -117,13 +117,17 @@ songController.get(`/${url}/:slug`, async (req, res) => {
         {
           model: Image,
           as: "image",
-          attributes: getQueryAttributes(req.query, "id,filename"),
+          attributes: getQueryAttributes(req.query, "id,filename", "image"),
           order: getQueryOrder(req.query, "image"),
         },
         {
           model: Audiofile,
           as: "audiofile",
-          attributes: getQueryAttributes(req.query, "id,filename"),
+          attributes: getQueryAttributes(
+            req.query,
+            "id,filename,artist_credit",
+            "audiofile"
+          ),
           order: getQueryOrder(req.query, "audiofile"),
         },
         {

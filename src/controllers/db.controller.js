@@ -1,6 +1,7 @@
 import express from "express";
 import sequelize from "../config/sequelize.config.js";
 import { errorResponse, successResponse } from "../utils/response.utils.js";
+import { copyFilesToVolume } from "../utils/seed.audiofile.utils.js";
 import { seedFromCsv } from "../utils/seed.utils.js";
 import { Genre } from "../models/genre.model.js";
 import { Album } from "../models/album.model.js";
@@ -23,7 +24,7 @@ dbController.get("/api", async (req, res) => {
 
 dbController.get("/sync", async (req, res) => {
   try {
-    const resp = await sequelize.sync();
+    const resp = await sequelize.sync({ alter: true });
     successResponse(res, "DB synced", 200);
   } catch (err) {
     errorResponse(res, `Error in DB sync: ${err.message}`, err, 500);
@@ -32,6 +33,10 @@ dbController.get("/sync", async (req, res) => {
 
 dbController.get("/seed", async (req, res) => {
   try {
+    await sequelize.sync();
+
+    copyFilesToVolume();
+
     const files_to_seed = [
       { file: "genre.csv", model: Genre },
       { file: "album.csv", model: Album },
@@ -43,8 +48,6 @@ dbController.get("/seed", async (req, res) => {
     ];
 
     const files_seeded = [];
-
-    await sequelize.sync();
 
     for (let item of files_to_seed) {
       files_seeded.push(await seedFromCsv(item.file, item.model));

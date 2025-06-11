@@ -51,6 +51,7 @@ imageController.get(
           filename: image.filename,
           id: image.id,
           user_id: image.user_id,
+          artist_credit: image.artist_credit,
         })),
         "success",
         200
@@ -69,7 +70,7 @@ imageController.get(`/${url}/:filename`, async (req, res) => {
       return errorResponse(res, `Image not found`, null, 404);
     }
 
-    res.send(filePath);
+    res.sendFile(filePath);
   } catch (err) {
     errorResponse(res, `Error in getting image: ${err.message}`, err, 500);
   }

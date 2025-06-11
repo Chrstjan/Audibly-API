@@ -27,4 +27,13 @@ export class Audiofile extends Model {
   @Attribute(DataTypes.INTEGER)
   @NotNull
   user_id;
+
+  @Attribute(DataTypes.TEXT)
+  artist_credit;
+
+  @Attribute(DataTypes.TEXT)
+  source;
+
+  @Attribute(DataTypes.TEXT)
+  music_type;
 }
