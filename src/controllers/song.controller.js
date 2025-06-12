@@ -14,7 +14,6 @@ import { Album } from "../models/album.model.js";
 import { Genre } from "../models/genre.model.js";
 import { Image } from "../models/image.model.js";
 import { Audiofile } from "../models/audiofile.model.js";
-import { SongInfo } from "../models/song_info.model.js";
 import { SongContributor } from "../models/song_contributor.model.js";
 
 export const songController = express.Router();
@@ -28,7 +27,7 @@ songController.get(`/${url}`, async (req, res) => {
     const result = await model.findAll({
       attributes: getQueryAttributes(
         req.query,
-        "id,name,slug,num_plays,is_single",
+        "id,name,slug,num_plays,is_single,song_info",
         "song"
       ),
       order: getQueryOrder(req.query, "song"),
@@ -57,21 +56,21 @@ songController.get(`/${url}`, async (req, res) => {
           as: "image",
           attributes: getQueryAttributes(req.query, "id,filename"),
         },
-        {
-          model: SongInfo,
-          as: "info",
-          attributes: getQueryAttributes(
-            req.query,
-            "id,length,original_artist_id,original_artist_name",
-            "info"
-          ),
-          order: getQueryOrder(req.query, "info"),
-        },
       ],
     });
 
     if (!result) {
       return errorResponse(res, `No songs found`, null, 404);
+    }
+
+    for (const item of result) {
+      if (item.is_single) {
+        delete item.dataValues.album;
+      }
+
+      if (typeof item.song_info === "string") {
+        item.song_info = JSON.parse(item.song_info);
+      }
     }
 
     successResponse(res, result, "success", 200);
@@ -91,7 +90,7 @@ songController.get(`/${url}/:slug`, async (req, res) => {
       where: { slug: slug },
       attributes: getQueryAttributes(
         req.query,
-        "id,name,slug,num_plays,is_single",
+        "id,name,slug,num_plays,is_single,song_info",
         "song"
       ),
       order: getQueryOrder(req.query, "song"),
@@ -129,16 +128,6 @@ songController.get(`/${url}/:slug`, async (req, res) => {
             "audiofile"
           ),
           order: getQueryOrder(req.query, "audiofile"),
-        },
-        {
-          model: SongInfo,
-          as: "info",
-          attributes: getQueryAttributes(
-            req.query,
-            "id,length,original_artist_id,original_artist_name",
-            "info"
-          ),
-          order: getQueryOrder(req.query, "info"),
         },
         {
           model: SongContributor,
@@ -181,6 +170,14 @@ songController.get(`/${url}/:slug`, async (req, res) => {
         );
       }
 
+      if (result.is_single) {
+        delete result.dataValues.album;
+      }
+
+      if (typeof result.song_info === "string") {
+        result.song_info = JSON.parse(result.song_info);
+      }
+
       successResponse(res, result, "success", 200);
     }
   } catch (err) {
@@ -217,6 +214,12 @@ songController.post(
         }`;
       } else {
         data.slug = data.name.trim().toLowerCase().replace(/\s+/g, "-");
+      }
+
+      //Converting strings to boolean
+      if (data) {
+        if (data.is_single == "true") data.is_single = true;
+        if (data.is_single == "false") data.is_single = false;
       }
 
       const result = await model.create(data);
@@ -258,6 +261,12 @@ songController.patch(
           null,
           404
         );
+      }
+
+      //Converting strings to boolean
+      if (data) {
+        if (data.is_single == "true") data.is_single = true;
+        if (data.is_single == "false") data.is_single = false;
       }
 
       const [updated] = await model.update(data, {

@@ -63,7 +63,7 @@ adminController.get(
             as: "songs",
             attributes: getQueryAttributes(
               req.query,
-              "id,name,slug,album_id,is_single,num_plays",
+              "id,name,slug,album_id,is_single,num_plays,song_info",
               "song"
             ),
             order: getQueryOrder(req.query, "song"),

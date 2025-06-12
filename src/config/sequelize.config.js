@@ -9,7 +9,6 @@ import { Genre } from "../models/genre.model.js";
 import { Audiofile } from "../models/audiofile.model.js";
 import { Image } from "../models/image.model.js";
 import { Song } from "../models/song.model.js";
-import { SongInfo } from "../models/song_info.model.js";
 import { SongContributor } from "../models/song_contributor.model.js";
 import { Playlist } from "../models/playlist.model.js";
 import { FavoriteArtist } from "../models/favorite_artist.model.js";
@@ -33,7 +32,6 @@ export const sequelize = new Sequelize({
     Audiofile,
     Image,
     Song,
-    SongInfo,
     SongContributor,
     Playlist,
     FavoriteArtist,

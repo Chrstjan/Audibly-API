@@ -7,6 +7,7 @@ import {
   NotNull,
   Default,
   Unique,
+  AllowNull,
 } from "@sequelize/core/decorators-legacy";
 
 @Table({
@@ -25,10 +26,6 @@ export class Playlist extends Model {
   @Attribute(DataTypes.INTEGER)
   @NotNull
   user_id;
-
-  @Attribute(DataTypes.INTEGER)
-  @NotNull
-  song_id;
 
   @Attribute(DataTypes.STRING)
   @NotNull

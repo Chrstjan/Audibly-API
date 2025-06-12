@@ -4,7 +4,6 @@ import { Album } from "../models/album.model.js";
 import { Audiofile } from "./audiofile.model.js";
 import { Image } from "./image.model.js";
 import { Song } from "./song.model.js";
-import { SongInfo } from "./song_info.model.js";
 import { SongContributor } from "./song_contributor.model.js";
 import { Playlist } from "./playlist.model.js";
 import { FavoriteArtist } from "./favorite_artist.model.js";
@@ -119,23 +118,6 @@ export const setRelations = async () => {
   //#endregion image
 
   //#region info
-  // Song / Song Info Relation
-  SongInfo.belongsTo(Song, {
-    foreignKey: {
-      name: "song_id",
-      onDelete: "CASCADE",
-    },
-    as: "song",
-  });
-
-  Song.hasOne(SongInfo, {
-    foreignKey: {
-      name: "song_id",
-      onDelete: "CASCADE",
-    },
-    as: "info",
-  });
-
   // Song / Song Contributor Relation
   SongContributor.belongsTo(Song, {
     foreignKey: {
@@ -180,6 +162,23 @@ export const setRelations = async () => {
       onDelete: "CASCADE",
     },
     as: "playlists",
+  });
+
+  // Playlist / Song Relation
+  Song.belongsTo(Playlist, {
+    foreignKey: {
+      name: "playlist_id",
+      onDelete: "CASCADE",
+    },
+    as: "playlist",
+  });
+
+  Playlist.hasMany(Song, {
+    foreignKey: {
+      name: "playlist_id",
+      onDelete: "CASCADE",
+    },
+    as: "songs",
   });
 
   // User / Favorite Artist Relation

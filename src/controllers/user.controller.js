@@ -9,7 +9,6 @@ import {
 } from "../utils/query.utils.js";
 import { Song } from "../models/song.model.js";
 import { Image } from "../models/image.model.js";
-import { SongInfo } from "../models/song_info.model.js";
 import { Album } from "../models/album.model.js";
 import { Playlist } from "../models/playlist.model.js";
 import { FavoriteArtist } from "../models/favorite_artist.model.js";
@@ -36,7 +35,7 @@ userController.get(`/${url}`, Authorize, async (req, res) => {
           as: "songs",
           attributes: getQueryAttributes(
             req.query,
-            "id,name,slug,album_id,is_single,num_plays",
+            "id,name,slug,is_single,num_plays,song_info",
             "song"
           ),
           order: getQueryOrder(req.query, "song"),
@@ -47,16 +46,6 @@ userController.get(`/${url}`, Authorize, async (req, res) => {
               as: "image",
               attributes: getQueryAttributes(req.query, "id,filename", "image"),
               order: getQueryOrder(req.query, "image"),
-            },
-            {
-              model: SongInfo,
-              as: "info",
-              attributes: getQueryAttributes(
-                req.query,
-                "id,song_id,length",
-                "song_info"
-              ),
-              order: getQueryOrder(req.query, "song_info"),
             },
             {
               model: Album,
@@ -124,29 +113,17 @@ userController.get(`/${url}`, Authorize, async (req, res) => {
             "favorite_song"
           ),
           order: getQueryOrder(req.query, "favorite_song"),
+          limit: getQueryLimit(req.query, "favorite_song"),
           include: [
             {
               model: Song,
               as: "song",
               attributes: getQueryAttributes(
                 req.query,
-                "id,name,slug,album_id,is_single",
+                "id,name,slug,is_single,song_info",
                 "song_favorite"
               ),
               order: getQueryOrder(req.query, "song_favorite"),
-              limit: getQueryOrder(req.query, "song_favorite"),
-              include: [
-                {
-                  model: Image,
-                  as: "image",
-                  attributes: getQueryAttributes(
-                    req.query,
-                    "id,filename",
-                    "image"
-                  ),
-                  order: getQueryOrder(req.query, "image"),
-                },
-              ],
             },
           ],
         },
@@ -156,6 +133,14 @@ userController.get(`/${url}`, Authorize, async (req, res) => {
     if (!result) {
       return errorResponse(res, `Could not find user with id: ${userId}`);
     }
+
+    for (const item of result?.dataValues?.songs) {
+      if (item?.is_single) {
+        delete item.dataValues.album;
+      }
+    }
+
+    successResponse(res, result, "success", 200);
   } catch (err) {
     errorResponse(res, `Error in getting user: ${err.message}`, err, 500);
   }

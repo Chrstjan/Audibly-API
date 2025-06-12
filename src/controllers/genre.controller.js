@@ -9,7 +9,6 @@ import {
 import { Song } from "../models/song.model.js";
 import { User } from "../models/user.model.js";
 import { Image } from "../models/image.model.js";
-import { SongInfo } from "../models/song_info.model.js";
 
 export const genreController = express.Router();
 const url = "genre";
@@ -46,7 +45,7 @@ genreController.get(`/${url}/:slug`, async (req, res) => {
           as: "songs",
           attributes: getQueryAttributes(
             req.query,
-            "id,name,slug,num_plays",
+            "id,name,slug,num_plays,song_info",
             "song"
           ),
           order: getQueryOrder(req.query, "song"),
@@ -57,16 +56,6 @@ genreController.get(`/${url}/:slug`, async (req, res) => {
               as: "image",
               attributes: getQueryAttributes(req.query, "id,filename", "image"),
               order: getQueryOrder(req.query, "image"),
-            },
-            {
-              model: SongInfo,
-              as: "info",
-              attributes: getQueryAttributes(
-                req.query,
-                "id,song_id,length",
-                "song_info"
-              ),
-              order: getQueryOrder(req.query, "song_order"),
             },
             {
               model: User,
@@ -85,6 +74,10 @@ genreController.get(`/${url}/:slug`, async (req, res) => {
 
     if (!result) {
       return errorResponse(res, `Genre with slug: ${slug} not found`);
+    }
+
+    if (typeof result.song_info === "string") {
+      result.song_info = JSON.parse(result.song_info);
     }
 
     successResponse(res, result, "success");

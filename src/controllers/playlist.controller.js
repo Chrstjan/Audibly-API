@@ -142,6 +142,12 @@ playlistController.post(
         data.slug = data.name.trim().toLowerCase().replace(/\s+/g, "-");
       }
 
+      //Converting strings to boolean
+      if (data) {
+        if (data.is_public == "true") data.is_public = true;
+        if (data.is_public == "false") data.is_public = false;
+      }
+
       const result = await model.create(data);
 
       if (!result) {
@@ -186,6 +192,12 @@ playlistController.patch(
           null,
           404
         );
+      }
+
+      //Converting strings to boolean
+      if (data) {
+        if (data.is_public == "true") data.is_public = true;
+        if (data.is_public == "false") data.is_public = false;
       }
 
       const [updated] = await model.update(data, {

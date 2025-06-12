@@ -27,6 +27,10 @@ const getCsvData = async (fileName) => {
           row.is_single = row.is_single === "true";
         }
 
+        if ("is_public" in row) {
+          row.is_public = row.is_public === "true";
+        }
+
         if ("num_plays" in row) {
           row.num_plays = parseInt(row.num_plays, 10);
         }

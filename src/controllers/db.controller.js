@@ -10,7 +10,6 @@ import { Album } from "../models/album.model.js";
 import { Audiofile } from "../models/audiofile.model.js";
 import { Image } from "../models/image.model.js";
 import { Song } from "../models/song.model.js";
-import { SongInfo } from "../models/song_info.model.js";
 import { SongContributor } from "../models/song_contributor.model.js";
 
 export const dbController = express.Router();
@@ -24,37 +23,52 @@ dbController.get("/api", async (req, res) => {
   }
 });
 
-dbController.get("/sync", async (req, res) => {
-  try {
-    const resp = await sequelize.sync();
-    successResponse(res, "DB synced", 200);
-  } catch (err) {
-    errorResponse(res, `Error in DB sync: ${err.message}`, err, 500);
-  }
-});
-
-dbController.get("/seed", async (req, res) => {
-  try {
-    await sequelize.sync();
-
-    copyFilesToVolume();
-
-    const files_to_seed = [
-      { file: "genre.csv", model: Genre },
-      { file: "album.csv", model: Album },
-      { file: "audiofile.csv", model: Audiofile },
-      { file: "image.csv", model: Image },
-      { file: "song.csv", model: Song },
-    ];
-
-    const files_seeded = [];
-
-    for (let item of files_to_seed) {
-      files_seeded.push(await seedFromCsv(item.file, item.model));
+dbController.get(
+  "/sync",
+  Authorize,
+  requiresRole("admin"),
+  async (req, res) => {
+    try {
+      const resp = await sequelize.sync();
+      successResponse(res, "DB synced", 200);
+    } catch (err) {
+      errorResponse(res, `Error in DB sync: ${err.message}`, err, 500);
     }
-
-    successResponse(res, { "Files seeded": files_seeded }, "Seeding complete");
-  } catch (err) {
-    errorResponse(res, `Seeding failed: ${err.message}`, err);
   }
-});
+);
+
+dbController.get(
+  "/seed",
+  Authorize,
+  requiresRole("admin"),
+  async (req, res) => {
+    try {
+      await sequelize.sync();
+
+      copyFilesToVolume();
+
+      const files_to_seed = [
+        { file: "genre.csv", model: Genre },
+        { file: "album.csv", model: Album },
+        { file: "audiofile.csv", model: Audiofile },
+        { file: "image.csv", model: Image },
+        { file: "song.csv", model: Song },
+        { file: "song_contributor.csv", model: SongContributor },
+      ];
+
+      const files_seeded = [];
+
+      for (let item of files_to_seed) {
+        files_seeded.push(await seedFromCsv(item.file, item.model));
+      }
+
+      successResponse(
+        res,
+        { "Files seeded": files_seeded },
+        "Seeding complete"
+      );
+    } catch (err) {
+      errorResponse(res, `Seeding failed: ${err.message}`, err);
+    }
+  }
+);

@@ -5,6 +5,7 @@ import {
   PrimaryKey,
   AutoIncrement,
   NotNull,
+  AllowNull,
   Unique,
   Default,
 } from "@sequelize/core/decorators-legacy";
@@ -27,11 +28,16 @@ export class Song extends Model {
   user_id;
 
   @Attribute(DataTypes.INTEGER)
+  @AllowNull
   album_id;
 
   @Attribute(DataTypes.INTEGER)
   @NotNull
   genre_id;
+
+  @Attribute(DataTypes.INTEGER)
+  @AllowNull
+  playlist_id;
 
   @Attribute(DataTypes.STRING)
   @NotNull
@@ -59,4 +65,7 @@ export class Song extends Model {
   @Attribute(DataTypes.BOOLEAN)
   @Default(false)
   is_single;
+
+  @Attribute(DataTypes.JSONB)
+  song_info;
 }

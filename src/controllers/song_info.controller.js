@@ -1,9 +1,9 @@
 import express from "express";
-import { SongInfo as model } from "../models/song_info.model.js";
+import { Song as model } from "../models/song.model.js";
 import { Authorize, getUserFromToken } from "../utils/auth.utils.js";
 import { requiresRole } from "../utils/role.auth.utils.js";
+import { validateStructure } from "../utils/structure.validation.utils.js";
 import { errorResponse, successResponse } from "../utils/response.utils.js";
-import { Song } from "../models/song.model.js";
 
 export const songInfoController = express.Router();
 const url = "song-info";
@@ -18,38 +18,34 @@ songInfoController.post(
   async (req, res) => {
     try {
       const userId = await getUserFromToken(req, res);
-      const data = req.body;
+      const { song_id, ...info } = req.body;
 
-      data.user_id = userId;
-
-      const song = await Song.findOne({
-        where: { id: data.song_id, user_id: userId },
+      const song = await model.findOne({
+        where: { id: song_id, user_id: userId },
       });
 
       if (!song) {
         return errorResponse(
           res,
-          `Song with id: ${data.song_id} belonging to user not found`,
+          `Song belonging to user not found`,
           null,
           404
         );
       }
 
-      const alreadyHasInfo = await Song.findOne({
-        where: { id: data.id, song_id: data.song_id },
-      });
-
-      if (alreadyHasInfo) {
-        return errorResponse(res, `Song already has info`, null);
+      if (song.song_info && Object.keys(song.song_info).length > 0) {
+        return errorResponse(res, `Song already has info`, null, 400);
       }
 
-      const result = await model.create(data);
-
-      if (!result) {
-        return errorResponse(res, `Error in creating song info`, result);
+      if (!validateStructure(info, "song_info")) {
+        return errorResponse(res, `Invalid fields in song_info`, null, 400);
       }
 
-      successResponse(res, result, "success", 201);
+      song.song_info = info;
+
+      const result = await song.save();
+
+      successResponse(res, result.song_info, "success", 201);
     } catch (err) {
       errorResponse(
         res,
@@ -71,32 +67,25 @@ songInfoController.patch(
   async (req, res) => {
     try {
       const userId = await getUserFromToken(req, res);
-      const data = req.body;
+      const { song_id, ...newInfo } = req.body;
 
-      data.user_id = userId;
-
-      const songInfo = await model.findOne({
-        where: { id: data.id, song_id: data.song_id, user_id: userId },
+      const song = await model.findOne({
+        where: { id: song_id, user_id: userId },
       });
 
-      if (!songInfo) {
-        return errorResponse(
-          res,
-          `Song info with id: ${data.id} belonging to user not found`,
-          null,
-          404
-        );
+      if (!song || !song.song_info) {
+        return errorResponse(res, `Song info not found`, null, 404);
       }
 
-      const [updated] = await model.update(data, {
-        where: { id: data.id, song_id: data.song_id, user_id: data.user_id },
-      });
-
-      if (!updated) {
-        return errorResponse(res, `Error in updating song info`, updated);
+      if (!validateStructure(newInfo, "song_info")) {
+        return errorResponse(res, `Invalid fields in song_info`, null, 400);
       }
 
-      successResponse(res, { ...data }, "update success");
+      song.song_info = { ...song.song_info, ...newInfo };
+
+      await song.save();
+
+      successResponse(res, song.song_info, "update success");
     } catch (err) {
       errorResponse(
         res,
@@ -112,36 +101,27 @@ songInfoController.patch(
  * Deletes song info
  *******************/
 songInfoController.delete(
-  `/${url}/:songId/:id`,
+  `/${url}/:songId`,
   Authorize,
   requiresRole(["artist", "admin"]),
   async (req, res) => {
     try {
       const userId = await getUserFromToken(req, res);
-      const { songId, id } = req.params;
+      const { songId } = req.params;
 
-      const songInfo = await model.findOne({
-        where: { id: id, song_id: songId, user_id: userId },
+      const song = await model.findOne({
+        where: { id: songId, user_id: userId },
       });
 
-      if (!songInfo) {
-        return errorResponse(
-          res,
-          `Song info with id: ${id} belonging to user not found`,
-          null,
-          404
-        );
+      if (!song || !song.song_info) {
+        return errorResponse(res, `Song info not found`, null, 404);
       }
 
-      const result = await model.destroy({
-        where: { id: id, song_id: songId, user_id: userId },
-      });
+      song.song_info = null;
 
-      if (!result) {
-        return errorResponse(res, `Error in deleting song info`, result);
-      }
+      await song.save();
 
-      successResponse(res, `Song info with id: ${id} deleted`, "success");
+      successResponse(res, `Song info deleted`, "success");
     } catch (err) {
       errorResponse(
         res,

@@ -12,7 +12,6 @@ import { User } from "../models/user.model.js";
 import { Song } from "../models/song.model.js";
 import { Genre } from "../models/genre.model.js";
 import { Image } from "../models/image.model.js";
-import { SongInfo } from "../models/song_info.model.js";
 
 export const albumController = express.Router();
 const url = "album";
@@ -44,7 +43,7 @@ albumController.get(`/${url}/:slug`, async (req, res) => {
           as: "songs",
           attributes: getQueryAttributes(
             req.query,
-            "id,name,slug,num_plays,is_single",
+            "id,name,slug,num_plays,is_single,song_info",
             "song"
           ),
           order: getQueryOrder(req.query, "song"),
@@ -76,16 +75,6 @@ albumController.get(`/${url}/:slug`, async (req, res) => {
               attributes: getQueryAttributes(req.query, "id,filename"),
               order: getQueryOrder(req.query, "image"),
             },
-            {
-              model: SongInfo,
-              as: "info",
-              attributes: getQueryAttributes(
-                req.query,
-                "id,length,original_artist_id,original_artist_name",
-                "info"
-              ),
-              order: getQueryOrder(req.query, "info"),
-            },
           ],
         },
       ],
@@ -98,6 +87,12 @@ albumController.get(`/${url}/:slug`, async (req, res) => {
         null,
         404
       );
+    }
+
+    for (const item of result?.dataValues?.songs) {
+      if (item?.is_single) {
+        delete item.dataValues;
+      }
     }
 
     successResponse(res, result, "success", 200);

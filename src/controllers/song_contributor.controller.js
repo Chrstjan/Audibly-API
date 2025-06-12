@@ -120,7 +120,7 @@ songContributorController.delete(
         where: { id: id, song_id: songId, user_id: userId },
       });
 
-      if (!songInfo) {
+      if (!songContributor) {
         return errorResponse(
           res,
           `Song contributor with id: ${id} belonging to user not found`,
