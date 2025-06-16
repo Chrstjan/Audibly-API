@@ -11,6 +11,7 @@ import { Image } from "../models/image.model.js";
 import { Song } from "../models/song.model.js";
 import { SongContributor } from "../models/song_contributor.model.js";
 import { Playlist } from "../models/playlist.model.js";
+import { PlaylistSong } from "../models/playlist_song.model.js";
 import { FavoriteArtist } from "../models/favorite_artist.model.js";
 import { FavoriteSong } from "../models/favorite_song.model.js";
 
@@ -34,6 +35,7 @@ export const sequelize = new Sequelize({
     Song,
     SongContributor,
     Playlist,
+    PlaylistSong,
     FavoriteArtist,
     FavoriteSong,
   ],

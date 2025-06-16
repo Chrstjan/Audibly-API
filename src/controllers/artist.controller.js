@@ -42,7 +42,7 @@ artistController.get(`/${url}/:id`, async (req, res) => {
           as: "songs",
           attributes: getQueryAttributes(
             req.query,
-            "id,name,slug,album_id,is_single,num_plays,song_info",
+            "id,name,slug,is_single,num_plays,song_info",
             "song"
           ),
           order: getQueryOrder(req.query, "song"),
@@ -91,11 +91,7 @@ artistController.get(`/${url}/:id`, async (req, res) => {
           model: Playlist,
           as: "playlists",
           where: { is_public: true },
-          attributes: getQueryAttributes(
-            req.query,
-            "id,name,slug,is_public",
-            "playlist"
-          ),
+          attributes: getQueryAttributes(req.query, "id,name,slug", "playlist"),
           order: getQueryOrder(req.query, "playlist"),
           limit: getQueryLimit(req.query, "playlist"),
         },
@@ -106,13 +102,11 @@ artistController.get(`/${url}/:id`, async (req, res) => {
       return errorResponse(res, `Artist with id: ${id} not found`, result, 404);
     }
 
-    for (const item of result) {
+    for (const item of result?.dataValues?.songs) {
       if (typeof item.song_info === "string") {
         item.song_info = JSON.parse(item.song_info);
       }
-    }
 
-    for (const item of result?.dataValues?.songs) {
       if (item?.is_single) {
         delete item.dataValues.album;
       }

@@ -1,7 +1,6 @@
 import express from "express";
 import { Playlist as model } from "../models/playlist.model.js";
 import { Authorize, getUserFromToken } from "../utils/auth.utils.js";
-import { requiresRole } from "../utils/role.auth.utils.js";
 import {
   getQueryAttributes,
   getQueryLimit,
@@ -13,7 +12,6 @@ import { Song } from "../models/song.model.js";
 import { Genre } from "../models/genre.model.js";
 import { Album } from "../models/album.model.js";
 import { Image } from "../models/image.model.js";
-import { SongInfo } from "../models/song_info.model.js";
 
 export const playlistController = express.Router();
 const url = "playlist";
@@ -44,11 +42,18 @@ playlistController.get(`/${url}/:slug`, async (req, res) => {
           as: "songs",
           attributes: getQueryAttributes(
             req.query,
-            "id,name,slug,num_plays,is_single",
+            "id,name,slug,num_plays,is_single,song_info",
             "song"
           ),
+          through: {
+            attributes: getQueryAttributes(
+              req.query,
+              "id,user_id,playlist_id",
+              "playlist_rel"
+            ),
+            as: "playlist_rel_info",
+          },
           order: getQueryOrder(req.query, "song"),
-          limit: getQueryLimit(req.query, "song"),
           include: [
             {
               model: Genre,
@@ -61,40 +66,26 @@ playlistController.get(`/${url}/:slug`, async (req, res) => {
               order: getQueryOrder(req.query, "genre"),
             },
             {
+              model: User,
+              as: "artist",
+              attributes: getQueryAttributes({}, "id,username", "user"),
+              order: getQueryOrder(req.query, "user"),
+            },
+            {
               model: Album,
               as: "album",
               attributes: getQueryAttributes(
                 req.query,
-                "id,name,slug",
-                "album"
+                "id,name,slug,image",
+                "song_album"
               ),
-              order: getQueryOrder(req.query, "album"),
-            },
-            {
-              model: User,
-              as: "artist",
-              attributes: getQueryAttributes(
-                {},
-                "id,username,avatar,role",
-                "user"
-              ),
-              order: getQueryOrder(req.query, "user"),
+              order: getQueryOrder(req.query, "song_album"),
             },
             {
               model: Image,
               as: "image",
               attributes: getQueryAttributes(req.query, "id,filename"),
               order: getQueryOrder(req.query, "image"),
-            },
-            {
-              model: SongInfo,
-              as: "info",
-              attributes: getQueryAttributes(
-                req.query,
-                "id,length,original_artist_id,original_artist_name",
-                "info"
-              ),
-              order: getQueryOrder(req.query, "info"),
             },
           ],
         },
@@ -110,6 +101,16 @@ playlistController.get(`/${url}/:slug`, async (req, res) => {
       );
     }
 
+    for (const item of result?.dataValues?.songs) {
+      if (typeof item.song_info === "string") {
+        item.song_info = JSON.parse(item.song_info);
+      }
+
+      if (item?.is_single) {
+        delete item.dataValues.album;
+      }
+    }
+
     successResponse(res, result, "success", 200);
   } catch (err) {
     errorResponse(res, `Error in getting playlist: ${err.message}`, err, 500);
@@ -119,148 +120,118 @@ playlistController.get(`/${url}/:slug`, async (req, res) => {
 /*******************
  * Creates playlist
  *******************/
-playlistController.post(
-  `/${url}`,
-  Authorize,
-  requiresRole(["artist", "admin"]),
-  async (req, res) => {
-    try {
-      const userId = await getUserFromToken(req, res);
-      const data = req.body;
+playlistController.post(`/${url}`, Authorize, async (req, res) => {
+  try {
+    const userId = await getUserFromToken(req, res);
+    const data = req.body;
 
-      data.user_id = userId;
+    data.user_id = userId;
 
-      const doesPlaylistExist = await model.findAll({
-        where: { name: data.name },
-      });
+    const doesPlaylistExist = await model.findAll({
+      where: { name: data.name },
+    });
 
-      if (doesPlaylistExist.length > 0) {
-        data.slug = `${data.name.trim().toLowerCase().replace(/\s+/g, "-")}-${
-          doesPlaylistExist.length
-        }`;
-      } else {
-        data.slug = data.name.trim().toLowerCase().replace(/\s+/g, "-");
-      }
-
-      //Converting strings to boolean
-      if (data) {
-        if (data.is_public == "true") data.is_public = true;
-        if (data.is_public == "false") data.is_public = false;
-      }
-
-      const result = await model.create(data);
-
-      if (!result) {
-        return errorResponse(res, `Error in creating playlist`, result);
-      }
-
-      successResponse(res, result, "success", 201);
-    } catch (err) {
-      errorResponse(
-        res,
-        `Error in creating playlist: ${err.message}`,
-        err,
-        500
-      );
+    if (doesPlaylistExist.length > 0) {
+      data.slug = `${data.name.trim().toLowerCase().replace(/\s+/g, "-")}-${
+        doesPlaylistExist.length
+      }`;
+    } else {
+      data.slug = data.name.trim().toLowerCase().replace(/\s+/g, "-");
     }
+
+    //Converting strings to boolean
+    if (data) {
+      if (data.is_public == "true") data.is_public = true;
+      if (data.is_public == "false") data.is_public = false;
+    }
+
+    const result = await model.create(data);
+
+    if (!result) {
+      return errorResponse(res, `Error in creating playlist`, result);
+    }
+
+    successResponse(res, result, "success", 201);
+  } catch (err) {
+    errorResponse(res, `Error in creating playlist: ${err.message}`, err, 500);
   }
-);
+});
 
 /*******************
  * Updates playlist
  *******************/
-playlistController.patch(
-  `/${url}`,
-  Authorize,
-  requiresRole(["artist", "admin"]),
-  async (req, res) => {
-    try {
-      const userId = await getUserFromToken(req, res);
-      const data = req.body;
+playlistController.patch(`/${url}`, Authorize, async (req, res) => {
+  try {
+    const userId = await getUserFromToken(req, res);
+    const data = req.body;
 
-      data.user_id = userId;
-      data.slug = data.name.trim().toLowerCase().replace(/\s+/g, "-");
+    data.user_id = userId;
+    data.slug = data.name.trim().toLowerCase().replace(/\s+/g, "-");
 
-      const playlist = await model.findOne({
-        where: { id: data.id, user_id: userId },
-      });
+    const playlist = await model.findOne({
+      where: { id: data.id, user_id: userId },
+    });
 
-      if (!playlist) {
-        return errorResponse(
-          res,
-          `Playlist with id: ${data.id} belonging to user not found`,
-          null,
-          404
-        );
-      }
-
-      //Converting strings to boolean
-      if (data) {
-        if (data.is_public == "true") data.is_public = true;
-        if (data.is_public == "false") data.is_public = false;
-      }
-
-      const [updated] = await model.update(data, {
-        where: { id: data.id, user_id: data.user_id },
-      });
-
-      if (!updated) {
-        return errorResponse(res, `Error in updating playlist`, updated);
-      }
-
-      successResponse(res, { ...data }, "update success");
-    } catch (err) {
-      errorResponse(
+    if (!playlist) {
+      return errorResponse(
         res,
-        `Error in updating playlist: ${err.message}`,
-        err,
-        500
+        `Playlist with id: ${data.id} belonging to user not found`,
+        null,
+        404
       );
     }
+
+    //Converting strings to boolean
+    if (data) {
+      if (data.is_public == "true") data.is_public = true;
+      if (data.is_public == "false") data.is_public = false;
+    }
+
+    const [updated] = await model.update(data, {
+      where: { id: data.id, user_id: data.user_id },
+    });
+
+    if (!updated) {
+      return errorResponse(res, `Error in updating playlist`, updated);
+    }
+
+    successResponse(res, { ...data }, "update success");
+  } catch (err) {
+    errorResponse(res, `Error in updating playlist: ${err.message}`, err, 500);
   }
-);
+});
 
 /*******************
  * Deletes playlist
  *******************/
-playlistController.delete(
-  `/${url}/:id`,
-  Authorize,
-  requiresRole(["artist", "admin"]),
-  async (req, res) => {
-    try {
-      const userId = await getUserFromToken(req, res);
-      const { id } = req.params;
+playlistController.delete(`/${url}/:id`, Authorize, async (req, res) => {
+  try {
+    const userId = await getUserFromToken(req, res);
+    const { id } = req.params;
 
-      const playlist = await model.findOne({
-        where: { id: id, user_id: userId },
-      });
+    const playlist = await model.findOne({
+      where: { id: id, user_id: userId },
+    });
 
-      if (!playlist) {
-        return errorResponse(
-          res,
-          `Playlist with id: ${id} belonging to user not found`,
-          null,
-          404
-        );
-      }
-
-      const result = await model.destroy({
-        where: { id: id, user_id: userId },
-      });
-
-      if (!result) {
-        return errorResponse(res, `Error in deleting playlist`, result);
-      }
-
-      successResponse(res, `Playlist with id: ${id} deleted`, "success");
-    } catch (err) {
-      errorResponse(
+    if (!playlist) {
+      return errorResponse(
         res,
-        `Error in deleting playlist: ${err.message}`,
-        err,
-        500
+        `Playlist with id: ${id} belonging to user not found`,
+        null,
+        404
       );
     }
+
+    const result = await model.destroy({
+      where: { id: id, user_id: userId },
+    });
+
+    if (!result) {
+      return errorResponse(res, `Error in deleting playlist`, result);
+    }
+
+    successResponse(res, `Playlist with id: ${id} deleted`, "success");
+  } catch (err) {
+    errorResponse(res, `Error in deleting playlist: ${err.message}`, err, 500);
   }
-);
+});

@@ -135,6 +135,10 @@ userController.get(`/${url}`, Authorize, async (req, res) => {
     }
 
     for (const item of result?.dataValues?.songs) {
+      if (typeof item.song_info === "string") {
+        item.song_info = JSON.parse(item.song_info);
+      }
+
       if (item?.is_single) {
         delete item.dataValues.album;
       }

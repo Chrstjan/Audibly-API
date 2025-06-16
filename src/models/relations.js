@@ -8,6 +8,7 @@ import { SongContributor } from "./song_contributor.model.js";
 import { Playlist } from "./playlist.model.js";
 import { FavoriteArtist } from "./favorite_artist.model.js";
 import { FavoriteSong } from "./favorite_song.model.js";
+import { PlaylistSong } from "./playlist_song.model.js";
 
 export const setRelations = async () => {
   //#region Song Relations
@@ -67,6 +68,7 @@ export const setRelations = async () => {
     foreignKey: {
       name: "album_id",
       onDelete: "CASCADE",
+      allowNull: true,
     },
     as: "album",
   });
@@ -75,6 +77,7 @@ export const setRelations = async () => {
     foreignKey: {
       name: "album_id",
       onDelete: "CASCADE",
+      allowNull: true,
     },
     as: "songs",
   });
@@ -164,21 +167,35 @@ export const setRelations = async () => {
     as: "playlists",
   });
 
-  // Playlist / Song Relation
-  Song.belongsTo(Playlist, {
+  // Playlist / Song Many-To-Many Relation
+  Playlist.belongsToMany(Song, {
+    through: {
+      model: PlaylistSong,
+    },
     foreignKey: {
       name: "playlist_id",
       onDelete: "CASCADE",
     },
-    as: "playlist",
-  });
-
-  Playlist.hasMany(Song, {
-    foreignKey: {
-      name: "playlist_id",
+    otherKey: {
+      name: "song_id",
       onDelete: "CASCADE",
     },
     as: "songs",
+  });
+
+  Song.belongsToMany(Playlist, {
+    through: {
+      model: PlaylistSong,
+    },
+    foreignKey: {
+      name: "song_id",
+      onDelete: "CASCADE",
+    },
+    otherKey: {
+      name: "playlist_id",
+      onDelete: "CASCADE",
+    },
+    as: "playlists",
   });
 
   // User / Favorite Artist Relation

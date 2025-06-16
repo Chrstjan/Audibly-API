@@ -76,8 +76,10 @@ genreController.get(`/${url}/:slug`, async (req, res) => {
       return errorResponse(res, `Genre with slug: ${slug} not found`);
     }
 
-    if (typeof result.song_info === "string") {
-      result.song_info = JSON.parse(result.song_info);
+    for (const item of result?.dataValues?.songs) {
+      if (typeof item.song_info === "string") {
+        item.song_info = JSON.parse(item.song_info);
+      }
     }
 
     successResponse(res, result, "success");

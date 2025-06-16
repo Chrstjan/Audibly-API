@@ -15,6 +15,7 @@ import { songController } from "./controllers/song.controller.js";
 import { songInfoController } from "./controllers/song_info.controller.js";
 import { songContributorController } from "./controllers/song_contributor.controller.js";
 import { playlistController } from "./controllers/playlist.controller.js";
+import { playlistSongController } from "./controllers/playlist_song.controller.js";
 import { artistController } from "./controllers/artist.controller.js";
 import { favoriteArtistController } from "./controllers/favorite_artist.controller.js";
 import { favoriteSongController } from "./controllers/favorite_song.controller.js";
@@ -52,6 +53,7 @@ app.use(
   songInfoController,
   songContributorController,
   playlistController,
+  playlistSongController,
   artistController,
   favoriteArtistController,
   favoriteSongController

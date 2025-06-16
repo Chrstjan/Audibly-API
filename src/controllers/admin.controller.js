@@ -98,6 +98,16 @@ adminController.get(
         return errorResponse(res, `No users found`, result, 404);
       }
 
+      for (const item of result?.dataValues?.songs) {
+        if (typeof item.song_info === "string") {
+          item.song_info = JSON.parse(item.song_info);
+        }
+
+        if (item?.is_single) {
+          delete item.dataValues.album;
+        }
+      }
+
       res.send({
         links: {
           home: `${domain}/admin-dashboard`,

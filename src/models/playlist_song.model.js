@@ -5,17 +5,15 @@ import {
   PrimaryKey,
   AutoIncrement,
   NotNull,
-  Default,
-  Unique,
 } from "@sequelize/core/decorators-legacy";
 
 @Table({
   freezeTableName: true,
   underscored: false,
-  modelName: "playlist",
+  modelName: "playlist_song",
   timestamps: true,
 })
-export class Playlist extends Model {
+export class PlaylistSong extends Model {
   @Attribute(DataTypes.INTEGER)
   @PrimaryKey
   @AutoIncrement
@@ -26,20 +24,11 @@ export class Playlist extends Model {
   @NotNull
   user_id;
 
-  @Attribute(DataTypes.STRING)
+  @Attribute(DataTypes.INTEGER)
   @NotNull
-  @Unique
-  @Default("")
-  name;
+  playlist_id;
 
-  @Attribute(DataTypes.STRING)
+  @Attribute(DataTypes.INTEGER)
   @NotNull
-  @Unique
-  @Default("")
-  slug;
-
-  @Attribute(DataTypes.BOOLEAN)
-  @NotNull
-  @Default(false)
-  is_public;
+  song_id;
 }

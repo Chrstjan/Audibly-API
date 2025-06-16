@@ -35,10 +35,6 @@ export class Song extends Model {
   @NotNull
   genre_id;
 
-  @Attribute(DataTypes.INTEGER)
-  @AllowNull
-  playlist_id;
-
   @Attribute(DataTypes.STRING)
   @NotNull
   @Unique
